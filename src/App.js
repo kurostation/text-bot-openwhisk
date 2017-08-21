@@ -20,6 +20,18 @@ const Message = (props) => (
   </div>
 );
 
+// const StateList = (props) => (
+//   <div className="segments load">
+//     <div className="from-watson">
+//       <div className="message-inner">
+//         <p>{props.message}</p>
+//         <p>{props.message}</p>
+//       </div>
+//       <div className="time">{props.time}</div>
+//     </div>
+//   </div>
+// );
+
 class App extends Component {
 
   constructor(props) {
@@ -46,12 +58,28 @@ class App extends Component {
     })
       .then(response => response.json())
       .then(function(messageResponse) {
+        let states = [];
+        let message = messageResponse.conversation.output.text.join('\n');
+
+        if (messageResponse.conversation.context.city.number_of_states > 1) {
+          let statelist = messageResponse.conversation.context.city.states;
+          // console.log(statelist);
+          for(var s in statelist) {
+            states.push(s);
+          }
+          // console.log('more than one state');
+          // console.log(states.join('\r\n'));
+
+          message = message + '\n' + states.join('\r\n');
+        }
+        // console.log(message);
+
         let now = new Date();
         let hhmmss = now.toString().substr(16, 8);
         self.setState({
           context: messageResponse.conversation.context,
           messages: self.state.messages.concat({
-            message: messageResponse.conversation.output.text.join('\n'),
+            message: message,
             type: 'watson',
             time: hhmmss,
             summary: messageResponse.conversation.context.summary,
